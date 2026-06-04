@@ -1,7 +1,44 @@
 .card {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
 
-  background-color: #a6a6a6;
+  background-color: var(--cells-bg);
   border-radius: 8px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.number {
+  font-size: 40px;
+  font-weight: 500;
+}
+
+.red {
+  color: #ff4d4d;
+}
+
+.blue {
+  color: #4d79ff;
+}
+
+.green {
+  color: #4dff4d;
+}
+
+.pink {
+  color: #ff4dff;
+}
+
+.purple {
+  color: #b84dff;
+}
+
+.cyan {
+  color: #4dffff;
+}
+
+.orange {
+  color: #ff944d;
 }
