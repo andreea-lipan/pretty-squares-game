@@ -1,3 +1,5 @@
+import Card from "./Card/Card.tsx";
+
 export default function Game() {
   return (
     <div>
@@ -6,10 +8,28 @@ export default function Game() {
       <table>
         <tbody>
         <tr>
-          <td>1</td>
-          <td>2</td>
-          <td>3</td>
-          <td>4</td>
+          <td><Card x={1} y={1}/></td>
+          <td><Card x={2} y={1}/></td>
+          <td><Card x={3} y={1}/></td>
+          <td><Card x={4} y={1}/></td>
+        </tr>
+        <tr>
+          <td><Card x={1} y={2}/></td>
+          <td><Card x={2} y={2}/></td>
+          <td><Card x={3} y={2}/></td>
+          <td><Card x={4} y={2}/></td>
+        </tr>
+        <tr>
+          <td><Card x={1} y={3}/></td>
+          <td><Card x={2} y={3}/></td>
+          <td><Card x={3} y={3}/></td>
+          <td><Card x={4} y={3}/></td>
+        </tr>
+        <tr>
+          <td><Card x={1} y={4}/></td>
+          <td><Card x={2} y={4}/></td>
+          <td><Card x={3} y={4}/></td>
+          <td><Card x={4} y={4}/></td>
         </tr>
         </tbody>
       </table>
