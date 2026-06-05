@@ -15,7 +15,7 @@ export default function Card({x, y, cell, selectionStart, selectionContinue,sele
   let backgroundColor = "background-default";
 
   if (cell.selectionBackgroundColor) {
-    backgroundColor = "background-" + cell.selectionBackgroundColor;
+    backgroundColor = `background-${cell.selectionBackgroundColor}`;
   } else if (cell.backgroundColor) {
     backgroundColor = "background-" + cell.backgroundColor;
   }

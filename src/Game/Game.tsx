@@ -21,27 +21,31 @@ for (let i = 0; i < 4; i++) {
 
 // Randomly assign numbers and colors to 4 cells
 const colors = ["green", "blue", "pink", "orange", "purple", "cyan"];
+
+// pick 4 unique colors from the list
+const pickedColurs = colors.sort(() => 0.5 - Math.random()).slice(0, 4);
+
 gameBoard[0][0] = {
-  number: 1,
-  numberColor: colors[Math.floor(Math.random() * colors.length)],
+  number: 6,
+  numberColor: pickedColurs[0],
   backgroundColor: null,
   selectionBackgroundColor: null
 };
 gameBoard[1][3] = {
   number: 2,
-  numberColor: colors[Math.floor(Math.random() * colors.length)],
+  numberColor: pickedColurs[1],
   backgroundColor: null,
   selectionBackgroundColor: null
 };
 gameBoard[2][2] = {
-  number: 3,
-  numberColor: colors[Math.floor(Math.random() * colors.length)],
+  number: 4,
+  numberColor: pickedColurs[2],
   backgroundColor: null,
   selectionBackgroundColor: null
 };
 gameBoard[2][0] = {
   number: 4,
-  numberColor: colors[Math.floor(Math.random() * colors.length)],
+  numberColor: pickedColurs[3],
   backgroundColor: null,
   selectionBackgroundColor: null
 };
@@ -50,8 +54,6 @@ gameBoard[2][0] = {
 export default function Game() {
 
   const [gameState, setGameState] = useState(gameBoard);
-  const [cont, setCont] = useState(false);
-
   const [currentSelection, setCurrentSelection] = useState<{
     startX: number,
     startY: number,
@@ -63,17 +65,15 @@ export default function Game() {
   // if it has no number -> give background lightgray
   // if it has more numbers -> give background red (error color)
   function verifySelection(startX: number, startY: number, endX: number, endY: number): string {
-    const number: {[key: number]: string} = {};
+    const number: { [key: number]: string } = {};
 
     // iterate through all cells in the current selection, if it has a number, add it to the number object with its color
-    if (currentSelection) {
-      for (let i = Math.min(startY, endY); i <= Math.max(startY, endY); i++) {
-        for (let j = Math.min(startX, endX); j <= Math.max(startX, endX); j++) {
-          const cell = gameState[i][j];
-          console.log("Cell", cell);
-          if (cell.number) {
-            number[cell.number] = cell.numberColor!;
-          }
+    for (let i = Math.min(startY, endY); i <= Math.max(startY, endY); i++) {
+      for (let j = Math.min(startX, endX); j <= Math.max(startX, endX); j++) {
+        const cell = gameState[i][j];
+        console.log("Cell", cell);
+        if (cell.number) {
+          number[cell.number] = cell.numberColor!;
         }
       }
     }
@@ -95,7 +95,7 @@ export default function Game() {
     return Object.values(number)[0];
   }
 
-  function colorRectangle(startX: number, startY: number, endX: number, endY: number) {
+  function colorRectangle(startX: number, startY: number, endX: number, endY: number, finalize: boolean = false) {
     console.log("Selecting rectangle from", startX, startY, "to", endX, endY);
     const color: string = verifySelection(startX, startY, endX, endY);
 
@@ -107,10 +107,19 @@ export default function Game() {
         // must make copy of game state to update it, not mutate it directly
         setGameState((prevValue) => {
           const newGameState = [...prevValue.map(innerArray => [...innerArray])];
-          newGameState[i][j] = {
-            ...newGameState[i][j],
-            selectionBackgroundColor: color // will use the function above later to determine the color based on the rules
+          if (finalize) {
+            newGameState[i][j] = {
+              ...newGameState[i][j],
+              backgroundColor: color !== "red" && color !== "lightgray" ? color : null, // if the color is red, section is invalid, dont save
+              selectionBackgroundColor: null
+            }
+          } else {
+            newGameState[i][j] = {
+              ...newGameState[i][j],
+              selectionBackgroundColor: color // will use the function above later to determine the color based on the rules
+            }
           }
+
           return newGameState;
         })
 
@@ -129,9 +138,8 @@ export default function Game() {
         endY: y
       });
 
-      // check if the new rectangle is different, if yes, decolor the old one and color the new one
+      // decolor the old one and color the new one
       removeCurrentSelectionColor();
-
       colorRectangle(currentSelection.startX, currentSelection.startY, x, y);
     }
   }
@@ -169,8 +177,52 @@ export default function Game() {
     removeCurrentSelectionColor();
   }
 
+  function endSelection(x: number, y: number) {
+    // if selection is valid, keep the color, if not, reset it
+    if (currentSelection) {
+      colorRectangle(currentSelection.startX, currentSelection.startY, x, y, true);
+    } else {
+      setCurrentSelection({
+        startX: x,
+        startY: y,
+        endX: x,
+        endY: y
+      });
+      colorRectangle(x, y, x, y, true);
+    }
+
+    resetSelection();
+  }
+
+  const gameWon = verifyGameWon();
+
+  function verifyGameWon(): boolean {
+    // check if all cells with numbers are covered by a rectangle of their color, and there are no empty cells
+
+    for (let i = 0; i < gameState.length; i++) {
+      for (let j = 0; j < gameState[i].length; j++) {
+        const cell = gameState[i][j];
+        if (cell.number) {
+          if (cell.backgroundColor !== cell.numberColor) {
+            return false;
+          }
+        }
+        if (!cell.number && !cell.backgroundColor) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  function resetGame() {
+    // reset game state to initial state
+    setGameState(gameBoard);
+  }
+
   return (
-    <div>
+    <div onMouseLeave={resetSelection}>
       <h2>Game</h2>
       {/*  table representing the game board 4x4 */}
       <table>
@@ -182,13 +234,17 @@ export default function Game() {
                 <Card x={j} y={i} cell={cell}
                       selectionStart={() => startSelection(j, i)}
                       selectionContinue={() => updateSelection(j, i)}
-                      selectionEnd={() => resetSelection()}/>
+                      selectionEnd={() => endSelection(j, i)}/>
               </td>
             ))}
           </tr>
         ))}
         </tbody>
       </table>
+      {gameWon && <>
+          <div>You won!</div>
+          <button onClick={resetGame}>Play again</button>
+      </>}
     </div>
   );
 }
