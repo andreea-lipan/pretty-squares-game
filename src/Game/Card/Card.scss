@@ -2,7 +2,7 @@
   width: 70px;
   height: 70px;
 
-  background-color: var(--cells-bg);
+  //background-color: var(--cells-bg);
   border-radius: 8px;
 
   display: flex;
@@ -42,3 +42,43 @@
 .orange {
   color: #ff944d;
 }
+
+.background-default {
+  background-color: var(--cells-bg);
+}
+
+.background-red {
+    background-color: rgba(255, 77, 77, 0.5);
+}
+
+.background-lightgray {
+    background-color: rgba(77, 77, 87, 0.5);
+}
+
+.background-blue {
+    background-color: rgba(77, 121, 255, 0.5);
+}
+
+.background-green {
+    background-color: rgba(77, 255, 77, 0.5);
+}
+
+.background-pink {
+    background-color: rgba(255, 77, 255, 0.5);
+}
+
+.background-purple {
+    background-color: rgba(184, 77, 255, 0.5);
+}
+
+.background-cyan {
+    background-color: rgba(77, 255, 255, 0.5);
+}
+
+.background-orange {
+    background-color: rgba(255, 148, 77, 0.5);
+}
+
+//.background-white {
+//    background-color: rgba(255, 255, 255, 0.5);
+//}
