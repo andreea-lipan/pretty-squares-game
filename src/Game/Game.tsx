@@ -65,7 +65,10 @@ export default function Game() {
   // if it has no number -> give background lightgray
   // if it has more numbers -> give background red (error color)
   function verifySelection(startX: number, startY: number, endX: number, endY: number): string {
-    const number: { [key: number]: string } = {};
+    // const number: { [key: number]: string } = {};
+
+    let number: number | null = null;
+    let color: string | null = null;
 
     // iterate through all cells in the current selection, if it has a number, add it to the number object with its color
     for (let i = Math.min(startY, endY); i <= Math.max(startY, endY); i++) {
@@ -73,31 +76,70 @@ export default function Game() {
         const cell = gameState[i][j];
         console.log("Cell", cell);
         if (cell.number) {
-          number[cell.number] = cell.numberColor!;
+          // number[cell.number] = cell.numberColor!;
+          if (number) {
+            return "red";
+          }
+          number = cell.number;
+          color = cell.numberColor;
+        }
+        if (cell.backgroundColor) {
+          // if the cell already has a background color, it means it is already part of a finalized selection, so we should return red
+          console.log("Cell", cell, "already has background color", cell.backgroundColor);
+          return "red";
         }
       }
     }
 
     // if there are no numbers, return lightgray
-    if (Object.keys(number).length === 0) {
+    if (!number) {
       console.log("Number object:", "lightgray");
       return "lightgray";
     }
 
     // if there is more than one number, return red
-    if (Object.keys(number).length > 1) {
-      console.log("Number object:", "red");
-      return "red";
-    }
+    // if (Object.keys(number).length > 1) {
+    //   console.log("Number object:", "red");
+    //   return "red";
+    // }
 
     // if there is only one number, return its color
     console.log("Number object:", number);
-    return Object.values(number)[0];
+    return color!;
   }
 
   function colorRectangle(startX: number, startY: number, endX: number, endY: number, finalize: boolean = false) {
     console.log("Selecting rectangle from", startX, startY, "to", endX, endY);
     const color: string = verifySelection(startX, startY, endX, endY);
+
+    // special case, if selection is of size 1 and finalize true
+    // if a cell with a background color is selected again, then we remove the whole section of that color
+    if (finalize && startX === endX && startY === endY) {
+      const cell = gameState[startY][startX];
+      if (cell.backgroundColor) {
+        // if the cell already has a background color, it means it is already part of a finalized selection, so we should remove the whole section of that color
+        const colorToRemove = cell.backgroundColor;
+        setGameState((prevValue) => {
+            const newGameState = [...prevValue.map(innerArray => [...innerArray])];
+            for (let i = 0; i < newGameState.length; i++) {
+              for (let j = 0; j < newGameState[i].length; j++) {
+                if (newGameState[i][j].backgroundColor === colorToRemove) {
+                  newGameState[i][j] = {
+                    ...newGameState[i][j],
+                    backgroundColor: null,
+                    selectionBackgroundColor: null
+                  }
+                }
+
+              }
+            }
+            return newGameState;
+          }
+        );
+      }
+
+      return;
+    }
 
     // Set background color of all cells in the rectangle to lightgray
     for (let i = Math.min(startY, endY); i <= Math.max(startY, endY); i++) {
@@ -108,11 +150,16 @@ export default function Game() {
         setGameState((prevValue) => {
           const newGameState = [...prevValue.map(innerArray => [...innerArray])];
           if (finalize) {
-            newGameState[i][j] = {
-              ...newGameState[i][j],
-              backgroundColor: color !== "red" && color !== "lightgray" ? color : null, // if the color is red, section is invalid, dont save
-              selectionBackgroundColor: null
+            if (!newGameState[i][j].backgroundColor) {
+              // if the cell already has a background color, it means it is already part of
+              // a finalized selection, so we should not update the background color and keep it as is
+              newGameState[i][j] = {
+                ...newGameState[i][j],
+                backgroundColor: color !== "red" && color !== "lightgray" ? color : null, // if the color is red, section is invalid, dont save
+                selectionBackgroundColor: null
+              }
             }
+
           } else {
             newGameState[i][j] = {
               ...newGameState[i][j],
